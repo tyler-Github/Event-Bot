@@ -14,24 +14,24 @@ module.exports = {
             events.splice(index, 1);
             // Save new events list
             fs.writeFileSync('./events.json', JSON.stringify(events));
-
             // Get current attendee list
             let attendeeList = JSON.parse(fs.readFileSync('./attending.json'));
             // Filter attendees for the deleted event
             let eventAttendees = attendeeList.filter(attendee => attendee.event === eventName);
             // Get usernames of event attendees
-            let usernames = eventAttendees.map(eventAttendees => eventAttendees.username);
+            let usernames = eventAttendees.map(eventAttendee => eventAttendee.username);
             // Log usernames of event attendees in a channel
-            let logChannel = client.channels.cache.get('1044085332108398629');
+            let logChannelId = JSON.parse(fs.readFileSync('./logs.json'))[interaction.guild.id];
+            let logChannel = client.channels.cache.get(logChannelId);
 
             const embed = new EmbedBuilder()
                 .setTitle(eventName)
                 .setDescription(`Event "${eventName}" has ended.`)
-                .addFields({ name: 'Attendees:', value: attendeeList.map(attendee => attendee.username).join(', ') }) //map through the attendee list and get the usernames, join them with a comma
+                .addFields({ name: 'Attendees:', value: usernames.join(', ') }) //map through the attendee list and get the usernames, join them with a comma
                 .setColor('Green')
                 .setFooter({ text: interaction.guild.name, iconURL: interaction.guild.iconURL() });
 
-            logChannel.send({embeds: [embed]});
+            logChannel.send({ embeds: [embed] });
 
             return interaction.reply({ content: `Event "${eventName}" has been deleted.`, ephemeral: true });
         } catch (err) {
